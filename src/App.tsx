@@ -34,9 +34,11 @@ export default function App() {
           </div>
         )}
 
-        {/* Center: Preview pane */}
-        <div className="flex-1 overflow-auto bg-slate-200 flex justify-center py-6 px-4">
-          <ResumePreview />
+        {/* Center: Preview pane — must NOT be a flex container on the scrollable root */}
+        <div className="flex-1 overflow-auto bg-slate-200">
+          <div className="min-h-full flex justify-center py-6 px-4">
+            <ResumePreview />
+          </div>
         </div>
 
         {/* Right: Layout settings panel */}

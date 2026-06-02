@@ -35,6 +35,15 @@ body {
   line-height: var(--resume-line-height);
   color: #1a1a1a;
   box-sizing: border-box;
+  /* page-break visual: dashed line at each 297mm interval (screen only) */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent calc(297mm - 1px),
+    #cbd5e1 calc(297mm - 1px),
+    #cbd5e1 297mm,
+    transparent 297mm
+  );
+  background-attachment: local;
 }
 
 .resume-module {
@@ -110,5 +119,6 @@ body {
     box-shadow: none !important;
     margin: 0 !important;
     padding: var(--resume-page-margin);
+    background-image: none !important;
   }
 }

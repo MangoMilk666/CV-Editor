@@ -30,8 +30,7 @@ export default function HeaderEditor() {
                 : 'text-slate-400 hover:text-slate-600'
             }`}
           >
-            <AlignLeft size={13} />
-            居左
+            <AlignLeft size={13} />居左
           </button>
           <button
             title="居中对齐"
@@ -42,20 +41,20 @@ export default function HeaderEditor() {
                 : 'text-slate-400 hover:text-slate-600'
             }`}
           >
-            <AlignCenter size={13} />
-            居中
+            <AlignCenter size={13} />居中
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         <Field label="姓名" value={header.name} onChange={(v) => updateHeader({ name: v })} />
-        <Field label="城市" value={header.city} onChange={(v) => updateHeader({ city: v })} />
+        <Field label="求职意向" value={header.jobTarget} onChange={(v) => updateHeader({ jobTarget: v })} placeholder="前端开发工程师" />
         <Field label="邮箱" value={header.email} onChange={(v) => updateHeader({ email: v })} />
         <Field label="电话" value={header.phone} onChange={(v) => updateHeader({ phone: v })} />
+        <Field label="城市" value={header.city} onChange={(v) => updateHeader({ city: v })} />
         <Field label="GitHub" value={header.github} onChange={(v) => updateHeader({ github: v })} />
         <Field label="个人网站" value={header.website} onChange={(v) => updateHeader({ website: v })} />
-        <Field label="LinkedIn" value={header.linkedin} onChange={(v) => updateHeader({ linkedin: v })} className="col-span-2" />
+        <Field label="LinkedIn" value={header.linkedin} onChange={(v) => updateHeader({ linkedin: v })} />
       </div>
 
       {/* Photo upload */}
@@ -109,21 +108,17 @@ export default function HeaderEditor() {
 }
 
 function Field({
-  label,
-  value,
-  onChange,
-  className = '',
+  label, value, onChange, className = '', placeholder = '',
 }: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  className?: string;
+  label: string; value: string; onChange: (v: string) => void;
+  className?: string; placeholder?: string;
 }) {
   return (
     <div className={className}>
       <label className="text-xs text-slate-400 block mb-0.5">{label}</label>
       <input
         className="w-full text-sm border border-slate-200 rounded px-2 py-1.5 focus:outline-none focus:border-blue-400"
+        placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />

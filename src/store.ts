@@ -18,6 +18,7 @@ const DEFAULT_LAYOUT: LayoutConfig = {
 
 const DEFAULT_HEADER: ResumeHeader = {
   name: '张三',
+  jobTarget: '前端开发工程师',
   email: 'zhangsan@example.com',
   phone: '138-0000-0000',
   city: '北京',
@@ -58,6 +59,7 @@ const DEFAULT_MODULES: ResumeModule[] = [
     title: '项目经历',
     entries: [{
       name: '简历编辑器',
+      role: '独立开发',
       techStack: 'React · TypeScript · Vite',
       startDate: '2024.03',
       endDate: '至今',

@@ -28,6 +28,7 @@ export type HeaderAlign = 'left' | 'center';
 
 export interface ResumeHeader {
   name: string;
+  jobTarget: string;
   email: string;
   phone: string;
   city: string;
@@ -40,7 +41,7 @@ export interface ResumeHeader {
 }
 
 // ── Field schema ──────────────────────────────────────────
-export type FieldType = 'text' | 'select' | 'textarea-md';
+export type FieldType = 'text' | 'select' | 'textarea-md' | 'date-ym';
 
 export interface FieldSchema {
   key: string;

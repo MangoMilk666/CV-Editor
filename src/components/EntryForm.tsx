@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { X } from 'lucide-react';
 import type { FieldSchema, EntryRecord } from '../types';
 import MarkdownToolbar from './MarkdownToolbar';
+import DatePicker from './DatePicker';
 
 interface Props {
   fields: FieldSchema[];
@@ -12,17 +13,14 @@ interface Props {
 }
 
 export default function EntryForm({ fields, entry, canDelete, onChange, onDelete }: Props) {
-  // One ref per textarea-md field, keyed by field key
   const textareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
 
   return (
     <div className="border border-slate-200 rounded overflow-hidden">
-      {/* Delete button header */}
       {canDelete && (
         <div className="flex justify-end px-2 py-1 bg-slate-50 border-b border-slate-100">
           <button
             onClick={onDelete}
-            title="删除此条经历"
             className="flex items-center gap-1 text-xs text-slate-400 hover:text-red-400 transition-colors"
           >
             <X size={13} />
@@ -33,10 +31,7 @@ export default function EntryForm({ fields, entry, canDelete, onChange, onDelete
 
       <div className="p-3 grid grid-cols-2 gap-x-3 gap-y-2">
         {fields.map((field) => (
-          <div
-            key={field.key}
-            className={field.span === 'full' ? 'col-span-2' : 'col-span-1'}
-          >
+          <div key={field.key} className={field.span === 'full' ? 'col-span-2' : 'col-span-1'}>
             <label className="text-xs text-slate-400 block mb-0.5">{field.label}</label>
 
             {field.type === 'text' && (
@@ -58,6 +53,13 @@ export default function EntryForm({ fields, entry, canDelete, onChange, onDelete
                   <option key={opt} value={opt}>{opt}</option>
                 ))}
               </select>
+            )}
+
+            {field.type === 'date-ym' && (
+              <DatePicker
+                value={entry[field.key] ?? ''}
+                onChange={(v) => onChange(field.key, v)}
+              />
             )}
 
             {field.type === 'textarea-md' && (

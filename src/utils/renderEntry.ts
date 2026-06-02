@@ -23,51 +23,71 @@ function md(s: string): string {
   return s.trim() ? renderMarkdown(s) : '';
 }
 
+function dateRange(e: EntryRecord): string {
+  return [e.startDate, e.endDate].filter(Boolean).join(' – ');
+}
+
 export function renderEntry(type: ModuleType, e: EntryRecord): string {
   switch (type) {
     case 'education': {
-      const titleParts = [e.school && `<strong>${esc(e.school)}</strong>`, e.major && esc(e.major), e.degree && esc(e.degree)].filter(Boolean);
-      const dateStr = [e.startDate, e.endDate].filter(Boolean).join(' – ');
-      const gpaLine = e.gpa ? `<div style="color:#555;font-size:0.92em">GPA: ${esc(e.gpa)}</div>` : '';
+      // School / major / degree separated by spaces (no dot), GPA on same line
+      const titleParts = [
+        e.school  && `<strong>${esc(e.school)}</strong>`,
+        e.major   && esc(e.major),
+        e.degree  && esc(e.degree),
+        e.gpa     && `GPA: ${esc(e.gpa)}`,
+      ].filter(Boolean);
       return [
-        row(titleParts.join(' · '), dateStr),
-        gpaLine,
+        row(titleParts.join('&ensp;&ensp;&ensp;'), dateRange(e)),
         md(e.notes ?? ''),
       ].filter(Boolean).join('\n');
     }
 
     case 'projects': {
-      const nameAndStack = [
+      // Title row: name · role
+      const titleLeft = [
         e.name && `<strong>${esc(e.name)}</strong>`,
-        e.techStack && esc(e.techStack),
-      ].filter(Boolean).join(' | ');
-      const dateStr = [e.startDate, e.endDate].filter(Boolean).join(' – ');
+        e.role && esc(e.role),
+      ].filter(Boolean).join(' · ');
+
+      // Link on title row (right side replaces date → push date below link)
+      // Layout:
+      //   项目名 · 角色          起止年月
+      //   链接 (blue, if present)
+      //   技术栈 (if present)
+      //   描述
       const linkLine = e.link
-        ? `<div><a href="https://${e.link.replace(/^https?:\/\//, '')}" style="color:#2563eb">${esc(e.link)}</a></div>`
+        ? `<div><a href="https://${e.link.replace(/^https?:\/\//, '')}" style="color:#2563eb;font-size:0.92em">${esc(e.link)}</a></div>`
         : '';
-      return [row(nameAndStack, dateStr), linkLine, md(e.description ?? '')].filter(Boolean).join('\n');
+      const stackLine = e.techStack
+        ? `<div style="color:#555;font-size:0.92em">技术栈：${esc(e.techStack)}</div>`
+        : '';
+      return [
+        row(titleLeft, dateRange(e)),
+        linkLine,
+        stackLine,
+        md(e.description ?? ''),
+      ].filter(Boolean).join('\n');
     }
 
     case 'internship':
     case 'work': {
       const titleParts = [
-        e.company && `<strong>${esc(e.company)}</strong>`,
+        e.company  && `<strong>${esc(e.company)}</strong>`,
         e.position && esc(e.position),
-        e.city && esc(e.city),
+        e.city     && esc(e.city),
       ].filter(Boolean);
-      const dateStr = [e.startDate, e.endDate].filter(Boolean).join(' – ');
-      return [row(titleParts.join(' · '), dateStr), md(e.description ?? '')].filter(Boolean).join('\n');
+      return [
+        row(titleParts.join(' · '), dateRange(e)),
+        md(e.description ?? ''),
+      ].filter(Boolean).join('\n');
     }
 
     case 'skills':
       return md(e.content ?? '');
 
-    case 'others': {
-      if (!e.name && !e.description) return '';
-      const name = e.name ? `<strong>${esc(e.name)}</strong>` : '';
-      const desc = e.description ? ` — ${esc(e.description)}` : '';
-      return `<div style="margin:2px 0">${name}${desc}</div>`;
-    }
+    case 'others':
+      return md(e.content ?? '');
 
     case 'custom':
       return md(e.content ?? '');
