@@ -70,7 +70,8 @@ export interface LayoutConfig {
   bodyFontSize: number;
   headingFontSize: number;
   fontFamily: string;
-  pageMarginMm: number;
+  pageMarginV: number;
+  pageMarginH: number;
   accentColor: string;
 }
 

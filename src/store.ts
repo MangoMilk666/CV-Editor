@@ -12,7 +12,8 @@ const DEFAULT_LAYOUT: LayoutConfig = {
   bodyFontSize: 13,
   headingFontSize: 16,
   fontFamily: "'Noto Sans SC', sans-serif",
-  pageMarginMm: 18,
+  pageMarginV: 18,
+  pageMarginH: 18,
   accentColor: '#1a1a1a',
 };
 
@@ -169,6 +170,17 @@ export const useResumeStore = create<ResumeStore>()(
 
       importData: (data) => set(data),
     }),
-    { name: 'cv-editor-v3' }
+    {
+      name: 'cv-editor-v3',
+      // Deep-merge layout so new fields added to DEFAULT_LAYOUT are never undefined
+      merge: (persisted: unknown, current) => {
+        const p = persisted as Partial<typeof current>;
+        return {
+          ...current,
+          ...p,
+          layout: { ...DEFAULT_LAYOUT, ...(p.layout ?? {}) },
+        };
+      },
+    }
   )
 );

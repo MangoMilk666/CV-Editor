@@ -12,7 +12,7 @@ function esc(s: string): string {
 function row(left: string, right: string): string {
   if (!left && !right) return '';
   const rightHtml = right
-    ? `<span style="white-space:nowrap;flex-shrink:0;color:#555;font-size:0.92em">${esc(right)}</span>`
+    ? `<span style="white-space:nowrap;flex-shrink:0;color:#555">${esc(right)}</span>`
     : '';
   return `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;line-height:1.4">
     <span style="flex:1;min-width:0">${left}</span>${rightHtml}

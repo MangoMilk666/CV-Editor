@@ -77,11 +77,18 @@ export default function LayoutPanel({ onClose }: Props) {
             onChange={(v) => updateLayout({ modulePaddingBottom: v })}
           />
           <SliderField
-            label="页边距"
-            value={layout.pageMarginMm}
-            min={10} max={30} step={1}
+            label="上下边距"
+            value={layout.pageMarginV}
+            min={6} max={28} step={1}
             unit="mm"
-            onChange={(v) => updateLayout({ pageMarginMm: v })}
+            onChange={(v) => updateLayout({ pageMarginV: v })}
+          />
+          <SliderField
+            label="左右边距"
+            value={layout.pageMarginH}
+            min={8} max={30} step={1}
+            unit="mm"
+            onChange={(v) => updateLayout({ pageMarginH: v })}
           />
         </Section>
 
