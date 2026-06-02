@@ -1,73 +1,124 @@
-# React + TypeScript + Vite
+# 简易 CV 编辑器
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+一个基于 React、TypeScript 和 Vite 的纯前端简历编辑器。当前版本支持在浏览器中编辑简历内容、实时预览 A4 版式、调整基础排版参数，并通过浏览器打印能力导出 PDF。
 
-Currently, two official plugins are available:
+## 功能概览
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- 个人信息编辑：姓名、求职意向、邮箱、电话、城市、GitHub、个人网站、LinkedIn。
+- 证件照支持：可上传 JPG、PNG、WebP 图片，支持 1 寸和 2 寸尺寸，并可移除照片。
+- 页眉布局：支持个人信息居左或居中展示。
+- 简历模块管理：支持教育背景、专业技能、项目经历、实习经历、工作经历、其他、自定义模块。
+- 模块操作：可添加、编辑、删除、隐藏/显示模块，并通过拖拽调整模块顺序。
+- 条目操作：每个模块可添加多条经历，并可删除单条经历。
+- Markdown 内容：技能、项目描述、经历描述、补充说明、自定义内容等多行字段支持 Markdown，包含加粗、有序列表、无序列表等常用写法。
+- 实时预览：中间区域按 A4 宽度展示简历效果，并显示分页参考线。
+- 排版设置：支持调整字体、正文字号、标题字号、行距、模块上下间距、页面边距和主题色。
+- 数据持久化：编辑内容会保存到浏览器 localStorage，刷新页面后仍可保留。
+- JSON 导入导出：可导出当前简历数据，也可导入之前保存的 JSON 文件。
+- PDF 导出：点击“导出 PDF”后调用浏览器打印面板，可选择保存为 PDF。
+- 全屏预览：可隐藏左侧编辑区，仅查看简历预览。
+- 重置：可一键恢复默认示例简历。
 
-## React Compiler
+## 技术栈
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- TypeScript
+- Vite
+- Tailwind CSS
+- Zustand
+- dnd-kit
+- marked
+- DOMPurify
+- lucide-react
 
-## Expanding the ESLint configuration
+## 本地运行
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+安装依赖：
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+启动开发服务器：
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+构建生产版本：
+
+```bash
+npm run build
+```
+
+预览生产构建：
+
+```bash
+npm run preview
+```
+
+代码检查：
+
+```bash
+npm run lint
+```
+
+## 使用说明
+
+1. 在左侧“个人信息”区域填写基础信息，可选择上传证件照和切换页眉对齐方式。
+2. 在左侧模块列表中编辑简历内容，点击“添加模块”可新增预设模块或自定义模块。
+3. 拖拽模块标题栏左侧的拖拽图标可调整模块展示顺序。
+4. 使用模块右侧开关可控制该模块是否出现在简历预览和 PDF 中。
+5. 点击顶部“排版”打开右侧设置面板，调整字体、字号、间距、边距和主题色。
+6. 点击“导出 JSON”保存当前数据，后续可通过“导入”恢复。
+7. 点击“导出 PDF”打开浏览器打印面板，选择“保存为 PDF”即可导出。
+
+## Markdown 支持
+
+多行文本字段会按 Markdown 渲染，并经过 DOMPurify 清理后输出。常用示例：
+
+```markdown
+- **前端框架**：React、Vue
+- **工程化**：Vite、TypeScript、Git
+
+1. 负责核心页面开发
+2. 优化首屏加载性能
+```
+
+## PDF 导出说明
+
+当前 PDF 导出依赖浏览器原生 `window.print()`。在打印面板中建议：
+
+- 纸张选择 A4。
+- 缩放保持默认或 100%。
+- 关闭浏览器页眉页脚。
+- 选择“保存为 PDF”。
+
+预览区和打印区复用同一份简历内容，打印时会隐藏编辑器界面，只输出简历正文。
+
+## 数据存储
+
+本项目目前没有后端服务。简历数据通过 Zustand persist 存储在浏览器 localStorage 中，存储键为 `cv-editor-v3`。
+
+如果更换浏览器、清理浏览器数据或切换设备，本地数据可能不可用。建议在重要修改后使用“导出 JSON”备份。
+
+## 项目结构
+
+```text
+src/
+  components/          # 编辑器、工具栏、预览、排版面板等组件
+  config/fields.ts     # 各模块字段配置
+  utils/               # Markdown 渲染、版式变量、条目渲染等工具
+  store.ts             # Zustand 状态和本地持久化
+  types.ts             # 简历数据类型定义
+  App.tsx              # 应用主布局
+```
+
+## 当前限制
+
+- 暂不支持云端同步、账号体系和多人协作。
+- 暂不支持多套简历模板切换。
+- PDF 导出效果受浏览器打印设置影响。
+- 自定义模块目前使用通用 Markdown 内容字段，不支持自定义结构化字段。
+
+产品需求文档见 [docs/PRD.md](docs/PRD.md)。
