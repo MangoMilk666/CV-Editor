@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;700&family=Inter:wght@300;400;500;700&display=swap');
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f1f5f9;
+  font-family: 'Noto Sans SC', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── CSS variables driven by layout settings ── */
+:root {
+  --resume-font-family: 'Noto Sans SC', sans-serif;
+  --resume-body-size: 13px;
+  --resume-heading-size: 16px;
+  --resume-line-height: 1.5;
+  --resume-module-gap-top: 16px;
+  --resume-module-gap-bottom: 16px;
+  --resume-page-margin: 18mm;
+  --resume-accent: #1a1a1a;
+}
+
+/* ── Resume preview shell ── */
+.resume-page {
+  width: 210mm;
+  min-height: 297mm;
+  padding: var(--resume-page-margin);
+  background: #fff;
+  font-family: var(--resume-font-family);
+  font-size: var(--resume-body-size);
+  line-height: var(--resume-line-height);
+  color: #1a1a1a;
+  box-sizing: border-box;
+}
+
+.resume-module {
+  margin-top: var(--resume-module-gap-top);
+  margin-bottom: var(--resume-module-gap-bottom);
+}
+
+.resume-module-title {
+  font-size: var(--resume-heading-size);
+  font-weight: 700;
+  color: var(--resume-accent);
+  border-bottom: 1.5px solid var(--resume-accent);
+  padding-bottom: 2px;
+  margin-bottom: 6px;
+}
+
+/* markdown rendered content */
+.resume-content ul {
+  list-style: disc;
+  padding-left: 1.4em;
+  margin: 4px 0;
+}
+.resume-content ol {
+  list-style: decimal;
+  padding-left: 1.4em;
+  margin: 4px 0;
+}
+.resume-content li {
+  margin-bottom: 2px;
+}
+.resume-content p {
+  margin: 4px 0;
+}
+.resume-content a {
+  color: var(--resume-accent);
+  text-decoration: underline;
+}
+.resume-content strong {
+  font-weight: 600;
+}
+
+/* blue links survive print (browser often strips colors in @media print) */
+.resume-page a[href] {
+  color: #2563eb !important;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ── Print styles ── */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #fff !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  #root {
+    display: block;
+  }
+
+  .resume-page {
+    width: 210mm;
+    min-height: 297mm;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: var(--resume-page-margin);
+  }
+}
