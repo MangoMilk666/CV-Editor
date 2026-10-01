@@ -7,15 +7,8 @@ export type ModuleType =
   | 'others'
   | 'custom';
 
-export const MODULE_LABELS: Record<ModuleType, string> = {
-  education: '教育背景',
-  skills: '专业技能',
-  projects: '项目经历',
-  internship: '实习经历',
-  work: '工作经历',
-  others: '其他',
-  custom: '自定义模块',
-};
+export type ResumeLocale = 'zh' | 'en';
+export type EntrySortOrder = 'desc' | 'asc';
 
 export type PhotoSize = '1inch' | '2inch';
 
@@ -29,6 +22,7 @@ export type HeaderAlign = 'left' | 'center';
 export interface ResumeHeader {
   name: string;
   jobTarget: string;
+  internshipDuration: string;
   email: string;
   phone: string;
   city: string;
@@ -61,6 +55,7 @@ export interface ResumeModule {
   title: string;
   entries: EntryRecord[];
   visible: boolean;
+  entrySortOrder?: EntrySortOrder;
 }
 
 export interface LayoutConfig {

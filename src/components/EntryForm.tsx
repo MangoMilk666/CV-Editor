@@ -3,6 +3,8 @@ import { X } from 'lucide-react';
 import type { FieldSchema, EntryRecord } from '../types';
 import MarkdownToolbar from './MarkdownToolbar';
 import DatePicker from './DatePicker';
+import { useResumeStore } from '../store';
+import { UI_TEXT } from '../config/i18n';
 
 interface Props {
   fields: FieldSchema[];
@@ -14,6 +16,8 @@ interface Props {
 
 export default function EntryForm({ fields, entry, canDelete, onChange, onDelete }: Props) {
   const textareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
+  const locale = useResumeStore((s) => s.locale);
+  const text = UI_TEXT[locale];
 
   return (
     <div className="border border-slate-200 rounded overflow-hidden">
@@ -24,7 +28,7 @@ export default function EntryForm({ fields, entry, canDelete, onChange, onDelete
             className="flex items-center gap-1 text-xs text-slate-400 hover:text-red-400 transition-colors"
           >
             <X size={13} />
-            删除此条
+            {text.deleteEntry}
           </button>
         </div>
       )}
@@ -57,6 +61,7 @@ export default function EntryForm({ fields, entry, canDelete, onChange, onDelete
 
             {field.type === 'date-ym' && (
               <DatePicker
+                locale={locale}
                 value={entry[field.key] ?? ''}
                 onChange={(v) => onChange(field.key, v)}
               />
@@ -65,6 +70,7 @@ export default function EntryForm({ fields, entry, canDelete, onChange, onDelete
             {field.type === 'textarea-md' && (
               <div>
                 <MarkdownToolbar
+                  locale={locale}
                   textareaRef={{ current: textareaRefs.current[field.key] ?? null }}
                   onChange={(v) => onChange(field.key, v)}
                 />

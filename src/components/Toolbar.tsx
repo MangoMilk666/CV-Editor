@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { Download, Upload, FileDown, SlidersHorizontal, RotateCcw, Maximize2 } from 'lucide-react';
 import { useResumeStore } from '../store';
 import type { ResumeData } from '../types';
+import { UI_TEXT } from '../config/i18n';
 
 interface Props {
   onToggleLayout: () => void;
@@ -13,6 +14,7 @@ interface Props {
 export default function Toolbar({ onToggleLayout, onToggleFullscreen, layoutOpen, fullscreen }: Props) {
   const store = useResumeStore();
   const importRef = useRef<HTMLInputElement>(null);
+  const text = UI_TEXT[store.locale];
 
   function handleExportJSON() {
     const data: ResumeData = { header: store.header, modules: store.modules, layout: store.layout };
@@ -34,7 +36,7 @@ export default function Toolbar({ onToggleLayout, onToggleFullscreen, layoutOpen
         const data = JSON.parse(ev.target?.result as string) as ResumeData;
         store.importData(data);
       } catch {
-        alert('JSON 文件格式错误，导入失败');
+        alert(text.importError);
       }
     };
     reader.readAsText(file);
@@ -46,34 +48,47 @@ export default function Toolbar({ onToggleLayout, onToggleFullscreen, layoutOpen
   }
 
   function handleReset() {
-    if (confirm('确定要重置所有内容吗？此操作不可恢复。')) {
+    if (confirm(text.resetConfirm)) {
       store.resetAll();
     }
   }
 
   return (
     <header className="no-print h-12 bg-white border-b border-slate-200 flex items-center px-4 gap-2 flex-shrink-0">
-      <span className="font-semibold text-slate-700 mr-3 text-sm">简历编辑器</span>
+      <span className="font-semibold text-slate-700 mr-3 text-sm">{text.appTitle}</span>
+
+      <div className="flex items-center gap-1 bg-slate-100 rounded p-0.5">
+        <LangBtn
+          label={text.languageZh}
+          active={store.locale === 'zh'}
+          onClick={() => store.setLocale('zh')}
+        />
+        <LangBtn
+          label={text.languageEn}
+          active={store.locale === 'en'}
+          onClick={() => store.setLocale('en')}
+        />
+      </div>
 
       <div className="flex items-center gap-1 ml-auto">
-        <ToolBtn icon={<Upload size={15} />} label="导入" onClick={() => importRef.current?.click()} />
-        <ToolBtn icon={<Download size={15} />} label="导出 JSON" onClick={handleExportJSON} />
+        <ToolBtn icon={<Upload size={15} />} label={text.import} onClick={() => importRef.current?.click()} />
+        <ToolBtn icon={<Download size={15} />} label={text.exportJson} onClick={handleExportJSON} />
         <div className="w-px h-5 bg-slate-200 mx-1" />
         <ToolBtn
           icon={<Maximize2 size={15} />}
-          label={fullscreen ? '退出预览' : '全屏预览'}
+          label={fullscreen ? text.exitPreview : text.fullscreen}
           onClick={onToggleFullscreen}
           active={fullscreen}
         />
         <ToolBtn
           icon={<SlidersHorizontal size={15} />}
-          label="排版"
+          label={text.layout}
           onClick={onToggleLayout}
           active={layoutOpen}
         />
         <div className="w-px h-5 bg-slate-200 mx-1" />
-        <ToolBtn icon={<FileDown size={15} />} label="导出 PDF" onClick={handleExportPDF} primary />
-        <ToolBtn icon={<RotateCcw size={15} />} label="重置" onClick={handleReset} danger />
+        <ToolBtn icon={<FileDown size={15} />} label={text.exportPdf} onClick={handleExportPDF} primary />
+        <ToolBtn icon={<RotateCcw size={15} />} label={text.reset} onClick={handleReset} danger />
       </div>
 
       <input
@@ -84,6 +99,20 @@ export default function Toolbar({ onToggleLayout, onToggleFullscreen, layoutOpen
         onChange={handleImportJSON}
       />
     </header>
+  );
+}
+
+function LangBtn({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
+        active ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+      }`}
+      onClick={onClick}
+      type="button"
+    >
+      {label}
+    </button>
   );
 }
 

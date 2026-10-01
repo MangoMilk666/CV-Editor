@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import ResumeContent from './ResumeContent';
+import { useResumeStore } from '../store';
+import { UI_TEXT } from '../config/i18n';
 
 const DEFAULT_PAGE_H = 1122; // 297mm @ 96 dpi fallback
 
@@ -8,6 +10,8 @@ export default function ResumePreview() {
   const [pageHeightPx, setPageHeightPx] = useState(DEFAULT_PAGE_H);
   const [totalPages, setTotalPages] = useState(1);
   const contentRef = useRef<HTMLDivElement>(null);
+  const locale = useResumeStore((s) => s.locale);
+  const text = UI_TEXT[locale];
 
   // Measure actual CSS-pixel height of 297mm once on mount
   useEffect(() => {
@@ -59,7 +63,7 @@ export default function ResumePreview() {
             className="resume-page-break"
             style={{ top: `${(i + 1) * pageHeightPx}px` }}
           >
-            <span className="resume-page-break-label">第 {i + 2} 页</span>
+            <span className="resume-page-break-label">{text.page(i + 2)}</span>
           </div>
         ))}
 

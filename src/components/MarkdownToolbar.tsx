@@ -1,7 +1,9 @@
 import type { RefObject } from 'react';
 import { Bold, Italic, List, ListOrdered, Link, Minus } from 'lucide-react';
+import type { ResumeLocale } from '../types';
 
 interface Props {
+  locale: ResumeLocale;
   textareaRef: RefObject<HTMLTextAreaElement | null>;
   onChange: (value: string) => void;
 }
@@ -10,7 +12,8 @@ type Action =
   | { kind: 'wrap'; before: string; after: string; placeholder: string }
   | { kind: 'line-prefix'; prefix: string };
 
-const TOOLS: { label: string; icon: React.ReactNode; action: Action; title: string }[] = [
+const TOOLS: Record<ResumeLocale, { label: string; icon: React.ReactNode; action: Action; title: string }[]> = {
+  zh: [
   {
     label: 'B',
     title: '粗体 (**text**)',
@@ -47,9 +50,48 @@ const TOOLS: { label: string; icon: React.ReactNode; action: Action; title: stri
     icon: <Minus size={13} />,
     action: { kind: 'line-prefix', prefix: '---' },
   },
-];
+  ],
+  en: [
+    {
+      label: 'B',
+      title: 'Bold (**text**)',
+      icon: <Bold size={13} />,
+      action: { kind: 'wrap', before: '**', after: '**', placeholder: 'bold text' },
+    },
+    {
+      label: 'I',
+      title: 'Italic (*text*)',
+      icon: <Italic size={13} />,
+      action: { kind: 'wrap', before: '*', after: '*', placeholder: 'italic text' },
+    },
+    {
+      label: '-',
+      title: 'Bulleted List',
+      icon: <List size={13} />,
+      action: { kind: 'line-prefix', prefix: '- ' },
+    },
+    {
+      label: '1.',
+      title: 'Numbered List',
+      icon: <ListOrdered size={13} />,
+      action: { kind: 'line-prefix', prefix: '1. ' },
+    },
+    {
+      label: 'link',
+      title: 'Link [text](url)',
+      icon: <Link size={13} />,
+      action: { kind: 'wrap', before: '[', after: '](url)', placeholder: 'link text' },
+    },
+    {
+      label: '---',
+      title: 'Divider',
+      icon: <Minus size={13} />,
+      action: { kind: 'line-prefix', prefix: '---' },
+    },
+  ],
+};
 
-export default function MarkdownToolbar({ textareaRef, onChange }: Props) {
+export default function MarkdownToolbar({ locale, textareaRef, onChange }: Props) {
   function applyAction(action: Action) {
     const el = textareaRef.current;
     if (!el) return;
@@ -95,7 +137,7 @@ export default function MarkdownToolbar({ textareaRef, onChange }: Props) {
 
   return (
     <div className="flex items-center gap-0.5 px-1.5 py-1 bg-slate-50 border border-slate-200 border-b-0 rounded-t">
-      {TOOLS.map((t) => (
+      {TOOLS[locale].map((t) => (
         <button
           key={t.title}
           title={t.title}

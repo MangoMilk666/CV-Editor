@@ -4,19 +4,25 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, ChevronDown, ChevronRight, Trash2, Plus } from 'lucide-react';
 import { useResumeStore } from '../store';
 import type { ResumeModule } from '../types';
-import { MODULE_FIELDS } from '../config/fields';
+import { getModuleFields } from '../config/fields';
+import { UI_TEXT } from '../config/i18n';
 import EntryForm from './EntryForm';
 
 interface Props {
   module: ResumeModule;
 }
 
+function supportsModuleSort(type: ResumeModule['type']): boolean {
+  return type === 'education' || type === 'projects' || type === 'internship';
+}
+
 export default function ModuleEditor({ module }: Props) {
-  const { updateModule, deleteModule, addEntry, updateEntry, deleteEntry } = useResumeStore();
+  const { updateModule, deleteModule, addEntry, updateEntry, deleteEntry, locale } = useResumeStore();
   const [expanded, setExpanded] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const text = UI_TEXT[locale];
 
-  const fields = MODULE_FIELDS[module.type];
+  const fields = getModuleFields(locale, module.type);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: module.id });
@@ -71,7 +77,7 @@ export default function ModuleEditor({ module }: Props) {
         <button
           role="switch"
           aria-checked={module.visible}
-          title={module.visible ? '隐藏此模块' : '显示此模块'}
+          title={module.visible ? text.hideModule : text.showModule}
           onClick={() => updateModule(module.id, { visible: !module.visible })}
           className="flex-shrink-0 rounded-full transition-colors duration-200 focus:outline-none"
           style={{ width: 32, height: 18, background: module.visible ? '#3b82f6' : '#cbd5e1' }}
@@ -89,7 +95,7 @@ export default function ModuleEditor({ module }: Props) {
           className={`p-0.5 transition-colors flex-shrink-0 ${
             confirmDelete ? 'text-red-500' : 'text-slate-300 hover:text-red-400'
           }`}
-          title={confirmDelete ? '再次点击确认删除' : '删除模块'}
+          title={confirmDelete ? text.confirmDeleteModule : text.deleteModule}
           onClick={handleDelete}
         >
           <Trash2 size={15} />
@@ -99,6 +105,20 @@ export default function ModuleEditor({ module }: Props) {
       {/* ── Entry forms ── */}
       {expanded && (
         <div className="p-2 space-y-2">
+          {supportsModuleSort(module.type) && (
+            <div className="border border-slate-200 rounded px-3 py-2 bg-slate-50">
+              <label className="text-xs text-slate-500 block mb-1">{text.sortOrder}</label>
+              <select
+                className="w-full text-sm border border-slate-200 rounded px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:border-blue-400"
+                value={module.entrySortOrder ?? 'desc'}
+                onChange={(e) => updateModule(module.id, { entrySortOrder: e.target.value as 'desc' | 'asc' })}
+              >
+                <option value="desc">{text.newestFirst}</option>
+                <option value="asc">{text.oldestFirst}</option>
+              </select>
+            </div>
+          )}
+
           {module.entries.map((entry, idx) => (
             <EntryForm
               key={idx}
@@ -115,7 +135,7 @@ export default function ModuleEditor({ module }: Props) {
             className="w-full flex items-center justify-center gap-1 py-1.5 text-xs text-blue-500 hover:text-blue-700 hover:bg-blue-50 border border-dashed border-blue-200 hover:border-blue-400 rounded transition-colors"
           >
             <Plus size={13} />
-            添加经历
+            {text.addEntry}
           </button>
         </div>
       )}

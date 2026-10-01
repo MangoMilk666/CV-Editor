@@ -11,11 +11,13 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Plus } from 'lucide-react';
 import { useResumeStore } from '../store';
 import ModuleEditor from './ModuleEditor';
-import { MODULE_LABELS, type ModuleType } from '../types';
+import type { ModuleType } from '../types';
+import { MODULE_LABELS, UI_TEXT } from '../config/i18n';
 
 export default function ModuleList() {
-  const { modules, addModule, reorderModules } = useResumeStore();
+  const { modules, addModule, reorderModules, locale } = useResumeStore();
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const text = UI_TEXT[locale];
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -47,12 +49,12 @@ export default function ModuleList() {
           onClick={() => setShowAddMenu((v) => !v)}
         >
           <Plus size={15} />
-          添加模块
+          {text.addModule}
         </button>
 
         {showAddMenu && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-10 py-1">
-            {(Object.entries(MODULE_LABELS) as [ModuleType, string][]).map(([type, label]) => (
+            {(Object.entries(MODULE_LABELS[locale]) as [ModuleType, string][]).map(([type, label]) => (
               <button
                 key={type}
                 className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"

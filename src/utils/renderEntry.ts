@@ -1,5 +1,20 @@
 import { renderMarkdown } from './markdown';
-import type { EntryRecord, ModuleType } from '../types';
+import type { EntryRecord, ModuleType, ResumeLocale } from '../types';
+
+const ENGLISH_MONTHS: Record<string, string> = {
+  '01': 'Jan.',
+  '02': 'Feb.',
+  '03': 'Mar.',
+  '04': 'Apr.',
+  '05': 'May',
+  '06': 'Jun.',
+  '07': 'Jul.',
+  '08': 'Aug.',
+  '09': 'Sep.',
+  '10': 'Oct.',
+  '11': 'Nov.',
+  '12': 'Dec.',
+};
 
 function esc(s: string): string {
   return s
@@ -9,10 +24,10 @@ function esc(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
-function row(left: string, right: string): string {
+function row(left: string, right: string, rightBold = false): string {
   if (!left && !right) return '';
   const rightHtml = right
-    ? `<span style="white-space:nowrap;flex-shrink:0;color:#555">${esc(right)}</span>`
+    ? `<span style="white-space:nowrap;flex-shrink:0;color:#555;${rightBold ? 'font-weight:700;' : ''}">${esc(right)}</span>`
     : '';
   return `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;line-height:1.4">
     <span style="flex:1;min-width:0">${left}</span>${rightHtml}
@@ -23,22 +38,32 @@ function md(s: string): string {
   return s.trim() ? renderMarkdown(s) : '';
 }
 
-function dateRange(e: EntryRecord): string {
-  return [e.startDate, e.endDate].filter(Boolean).join(' – ');
+function formatDateValue(value: string, locale: ResumeLocale): string {
+  if (!value) return '';
+  if (locale === 'zh') return value;
+  if (value === 'Present') return value;
+  const [year, month] = value.split('.');
+  if (!year || !month) return value;
+  return `${ENGLISH_MONTHS[month] ?? month} ${year}`;
 }
 
-export function renderEntry(type: ModuleType, e: EntryRecord): string {
+function dateRange(e: EntryRecord, locale: ResumeLocale): string {
+  return [formatDateValue(e.startDate ?? '', locale), formatDateValue(e.endDate ?? '', locale)]
+    .filter(Boolean)
+    .join(' – ');
+}
+
+export function renderEntry(type: ModuleType, e: EntryRecord, locale: ResumeLocale): string {
   switch (type) {
     case 'education': {
-      // School / major / degree separated by spaces (no dot), GPA on same line
       const titleParts = [
-        e.school  && `<strong>${esc(e.school)}</strong>`,
-        e.major   && esc(e.major),
-        e.degree  && esc(e.degree),
-        e.gpa     && `GPA: ${esc(e.gpa)}`,
+        e.school && `<strong>${esc(e.school)}</strong>`,
+        locale === 'zh' && e.major && esc(e.major),
+        e.degree && esc(e.degree),
+        e.gpa && `GPA: ${esc(e.gpa)}`,
       ].filter(Boolean);
       return [
-        row(titleParts.join('&ensp;&ensp;&ensp;'), dateRange(e)),
+        row(titleParts.join('&ensp;&ensp;&ensp;'), dateRange(e, locale), locale === 'en'),
         md(e.notes ?? ''),
       ].filter(Boolean).join('\n');
     }
@@ -60,10 +85,10 @@ export function renderEntry(type: ModuleType, e: EntryRecord): string {
         ? `<div><a href="https://${e.link.replace(/^https?:\/\//, '')}" style="color:#2563eb;font-size:0.92em">${esc(e.link)}</a></div>`
         : '';
       const stackLine = e.techStack
-        ? `<div style="color:#555;font-size:0.92em">技术栈：${esc(e.techStack)}</div>`
+        ? `<div style="color:#555;font-size:0.92em">${locale === 'zh' ? '技术栈：' : 'Tech Stack: '}${esc(e.techStack)}</div>`
         : '';
       return [
-        row(titleLeft, dateRange(e)),
+        row(titleLeft, dateRange(e, locale), locale === 'en'),
         linkLine,
         stackLine,
         md(e.description ?? ''),
@@ -78,7 +103,7 @@ export function renderEntry(type: ModuleType, e: EntryRecord): string {
         e.city     && esc(e.city),
       ].filter(Boolean);
       return [
-        row(titleParts.join(' · '), dateRange(e)),
+        row(titleParts.join(' · '), dateRange(e, locale), locale === 'en'),
         md(e.description ?? ''),
       ].filter(Boolean).join('\n');
     }

@@ -1,32 +1,53 @@
 import { useResumeStore } from '../store';
 import { renderEntry } from '../utils/renderEntry';
-import { PHOTO_DIMENSIONS } from '../types';
+import { PHOTO_DIMENSIONS, type EntryRecord, type EntrySortOrder, type ModuleType } from '../types';
+import { isPresentValue, UI_TEXT } from '../config/i18n';
 
 const LINK_STYLE: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' };
 
 function parseDateVal(d: string): number {
-  if (!d || d === '至今') return 999999;
+  if (!d || isPresentValue(d)) return 999999;
   const [y, m] = d.split('.');
   return parseInt(y || '0') * 100 + parseInt(m || '0');
 }
 
+function supportsModuleSort(type: ModuleType): boolean {
+  return type === 'education' || type === 'projects' || type === 'internship';
+}
+
+function sortEntriesByDate(entries: EntryRecord[], order: EntrySortOrder) {
+  return [...entries].sort((a, b) => {
+    const endDiff = parseDateVal(b.endDate) - parseDateVal(a.endDate);
+    const startDiff = parseDateVal(b.startDate) - parseDateVal(a.startDate);
+    const result = endDiff !== 0 ? endDiff : startDiff;
+    return order === 'asc' ? -result : result;
+  });
+}
+
+function chunkItems<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+}
+
 /** Pure content — no outer page wrapper. Used both for screen pages and print portal. */
 export default function ResumeContent() {
-  const { header, modules } = useResumeStore();
+  const { header, modules, locale } = useResumeStore();
   const photoDim = PHOTO_DIMENSIONS[header.photoSize];
   const isCenter = header.headerAlign === 'center';
+  const text = UI_TEXT[locale];
 
-  const row1 = [
+  const contactItems = [
     header.email ? { label: header.email, href: `mailto:${header.email}` } : null,
     header.phone ? { label: header.phone, href: null } : null,
-    header.city  ? { label: header.city,  href: null } : null,
-  ].filter(Boolean) as { label: string; href: string | null }[];
-
-  const row2 = [
+    header.city ? { label: header.city, href: null } : null,
     header.github   ? { label: header.github,   href: `https://${header.github.replace(/^https?:\/\//, '')}` } : null,
-    header.website  ? { label: header.website,  href: `https://${header.website.replace(/^https?:\/\//, '')}` } : null,
+    header.website ? { label: header.website, href: `https://${header.website.replace(/^https?:\/\//, '')}` } : null,
     header.linkedin ? { label: header.linkedin, href: `https://${header.linkedin.replace(/^https?:\/\//, '')}` } : null,
-  ].filter(Boolean) as { label: string; href: string }[];
+  ].filter(Boolean) as { label: string; href: string | null }[];
+  const contactRows = chunkItems(contactItems, 2);
 
   function InfoItem({ label, href }: { label: string; href: string | null }) {
     return href ? <a href={href} style={LINK_STYLE}>{label}</a> : <span>{label}</span>;
@@ -50,29 +71,27 @@ export default function ResumeContent() {
           <div style={{ fontSize: '24px', fontWeight: 700, letterSpacing: '0.06em', marginBottom: '4px' }}>
             {header.name || '姓名'}
           </div>
-          {row1.length > 0 && (
-            <div style={{ fontSize: '12px', color: '#444', marginBottom: '2px' }}>
-              {row1.map((item, i) => (
-                <span key={i}>
+          {contactRows.map((row, rowIndex) => (
+            <div
+              key={rowIndex}
+              style={{ fontSize: '12px', color: '#444', marginBottom: '2px' }}
+            >
+              {row.map((item, i) => (
+                <span key={`${rowIndex}-${i}`}>
                   {i > 0 && <span style={{ margin: '0 6px', color: '#bbb' }}>|</span>}
                   <InfoItem {...item} />
                 </span>
               ))}
             </div>
-          )}
-          {row2.length > 0 && (
-            <div style={{ fontSize: '12px', marginBottom: '2px' }}>
-              {row2.map((item, i) => (
-                <span key={i}>
-                  {i > 0 && <span style={{ margin: '0 6px', color: '#bbb' }}>|</span>}
-                  <InfoItem {...item} />
-                </span>
-              ))}
-            </div>
-          )}
+          ))}
           {header.jobTarget && (
             <div style={{ fontSize: '12px', color: '#444', marginTop: '2px' }}>
-              求职意向：{header.jobTarget}
+              {text.jobTargetPrefix}{header.jobTarget}
+            </div>
+          )}
+          {header.internshipDuration && (
+            <div style={{ fontSize: '12px', color: '#444', marginTop: '2px' }}>
+              {text.internshipDurationPrefix}{header.internshipDuration}
             </div>
           )}
         </div>
@@ -82,19 +101,28 @@ export default function ResumeContent() {
             <div style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '4px' }}>
               {header.name || '姓名'}
             </div>
-            {row1.length > 0 && (
-              <div style={{ fontSize: '12px', color: '#444', display: 'flex', flexWrap: 'wrap', gap: '0 12px' }}>
-                {row1.map((item, i) => <InfoItem key={i} {...item} />)}
+            {contactRows.map((row, rowIndex) => (
+              <div
+                key={rowIndex}
+                style={{
+                  fontSize: '12px',
+                  color: '#444',
+                  display: 'flex',
+                  gap: '0 12px',
+                  marginTop: rowIndex > 0 ? '2px' : 0,
+                }}
+              >
+                {row.map((item, i) => <InfoItem key={`${rowIndex}-${i}`} {...item} />)}
               </div>
-            )}
-            {row2.length > 0 && (
-              <div style={{ fontSize: '12px', display: 'flex', flexWrap: 'wrap', gap: '0 12px', marginTop: '2px' }}>
-                {row2.map((item, i) => <InfoItem key={i} {...item} />)}
-              </div>
-            )}
+            ))}
             {header.jobTarget && (
               <div style={{ fontSize: '12px', color: '#444', marginTop: '2px' }}>
-                求职意向：{header.jobTarget}
+                {text.jobTargetPrefix}{header.jobTarget}
+              </div>
+            )}
+            {header.internshipDuration && (
+              <div style={{ fontSize: '12px', color: '#444', marginTop: '2px' }}>
+                {text.internshipDurationPrefix}{header.internshipDuration}
               </div>
             )}
           </div>
@@ -109,18 +137,15 @@ export default function ResumeContent() {
 
       {/* ── Modules ── */}
       {modules.filter((m) => m.visible).map((mod) => {
-        const entries = mod.type === 'projects'
-          ? [...mod.entries].sort((a, b) => {
-              const ed = parseDateVal(b.endDate) - parseDateVal(a.endDate);
-              return ed !== 0 ? ed : parseDateVal(b.startDate) - parseDateVal(a.startDate);
-            })
+        const entries = supportsModuleSort(mod.type)
+          ? sortEntriesByDate(mod.entries, mod.entrySortOrder ?? 'desc')
           : mod.entries;
 
         return (
           <div key={mod.id} className="resume-module">
             <div className="resume-module-title">{mod.title}</div>
             {entries.map((entry, i) => {
-              const html = renderEntry(mod.type, entry);
+              const html = renderEntry(mod.type, entry, locale);
               if (!html) return null;
               return (
                 <div
