@@ -1,14 +1,16 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { EntrySortOrder, LayoutConfig, ModuleType, ResumeData, ResumeHeader, ResumeLocale, ResumeModule } from './types';
+import type { EntrySortOrder, LayoutConfig, ModuleType, ResumeData, ResumeHeader, ResumeLocale, ResumeModule, ResumeTemplate } from './types';
 import { emptyEntry } from './config/fields';
-import { createDefaultResume, DEFAULT_HEADERS, DEFAULT_LAYOUTS } from './config/resumeDefaults';
+import { createDefaultResume, DEFAULT_HEADERS, DEFAULT_LAYOUTS, DEFAULT_TEMPLATES, SECOND_CHINESE_TEMPLATE } from './config/resumeDefaults';
 import { MODULE_LABELS } from './config/i18n';
 import { v4 as uuid } from './utils/uuid';
 
 interface ResumeStore extends ResumeData {
   locale: ResumeLocale;
   setLocale: (locale: ResumeLocale) => void;
+  selectTemplate: (templateId: string) => void;
+  renameTemplate: (templateId: string, name: string) => void;
   updateHeader: (patch: Partial<ResumeHeader>) => void;
   updateLayout: (patch: Partial<LayoutConfig>) => void;
   addModule: (type: ModuleType) => void;
@@ -21,6 +23,8 @@ interface ResumeStore extends ResumeData {
   resetAll: () => void;
   importData: (data: ResumeData) => void;
   resumes: Record<ResumeLocale, ResumeData>;
+  templates: Record<ResumeLocale, ResumeTemplate[]>;
+  activeTemplateIds: Record<ResumeLocale, string>;
 }
 
 const DEFAULT_LOCALE: ResumeLocale = 'zh';
@@ -56,8 +60,33 @@ function createDefaultResumes(): Record<ResumeLocale, ResumeData> {
   };
 }
 
+function createDefaultTemplates(): Record<ResumeLocale, ResumeTemplate[]> {
+  return {
+    zh: [
+      { ...DEFAULT_TEMPLATES.zh, layout: { ...DEFAULT_TEMPLATES.zh.layout } },
+      { ...SECOND_CHINESE_TEMPLATE, layout: { ...SECOND_CHINESE_TEMPLATE.layout } },
+    ],
+    en: [{ ...DEFAULT_TEMPLATES.en, layout: { ...DEFAULT_TEMPLATES.en.layout } }],
+  };
+}
+
 function mergeLayoutDefaults(layout: Partial<LayoutConfig> | undefined, locale: ResumeLocale): LayoutConfig {
   return { ...DEFAULT_LAYOUTS[locale], ...(layout ?? {}) };
+}
+
+function mergeTemplateList(saved: ResumeTemplate[] | undefined, locale: ResumeLocale): ResumeTemplate[] {
+  const defaults = createDefaultTemplates()[locale];
+  const normalizedSaved = (saved ?? []).map((template) => ({
+    ...(defaults.find((item) => item.id === template.id) ?? DEFAULT_TEMPLATES[locale]),
+    ...template,
+    locale,
+    layout: mergeLayoutDefaults(template.layout, locale),
+  }));
+  const defaultIds = new Set(defaults.map((template) => template.id));
+  return [
+    ...defaults.map((template) => normalizedSaved.find((item) => item.id === template.id) ?? template),
+    ...normalizedSaved.filter((template) => !defaultIds.has(template.id)),
+  ];
 }
 
 function mergeHeaderDefaults(header: Partial<ResumeHeader> | undefined, locale: ResumeLocale): ResumeHeader {
@@ -90,6 +119,8 @@ export const useResumeStore = create<ResumeStore>()(
     (set, get) => ({
       locale: DEFAULT_LOCALE,
       resumes: createDefaultResumes(),
+      templates: createDefaultTemplates(),
+      activeTemplateIds: { zh: DEFAULT_TEMPLATES.zh.id, en: DEFAULT_TEMPLATES.en.id },
       ...cloneResume(createDefaultResume(DEFAULT_LOCALE)),
 
       updateHeader: (patch) =>
@@ -108,7 +139,40 @@ export const useResumeStore = create<ResumeStore>()(
         set((s) => {
           const current = s.resumes[s.locale];
           const next = { ...current, layout: { ...current.layout, ...patch } };
+          const activeId = s.activeTemplateIds[s.locale];
           return {
+            header: next.header,
+            modules: next.modules,
+            layout: next.layout,
+            resumes: { ...s.resumes, [s.locale]: next },
+            templates: {
+              ...s.templates,
+              [s.locale]: s.templates[s.locale].map((template) =>
+                template.id === activeId ? { ...template, layout: next.layout } : template
+              ),
+            },
+          };
+        }),
+
+      setLocale: (locale) =>
+        set((s) => {
+          const next = s.resumes[locale];
+          const template = s.templates[locale].find((item) => item.id === s.activeTemplateIds[locale]);
+          return {
+            locale,
+            header: next.header,
+            modules: next.modules,
+            layout: template?.layout ?? next.layout,
+          };
+        }),
+
+      selectTemplate: (templateId) =>
+        set((s) => {
+          const template = s.templates[s.locale].find((item) => item.id === templateId);
+          if (!template) return s;
+          const next = { ...s.resumes[s.locale], layout: { ...template.layout } };
+          return {
+            activeTemplateIds: { ...s.activeTemplateIds, [s.locale]: templateId },
             header: next.header,
             modules: next.modules,
             layout: next.layout,
@@ -116,16 +180,15 @@ export const useResumeStore = create<ResumeStore>()(
           };
         }),
 
-      setLocale: (locale) =>
-        set((s) => {
-          const next = s.resumes[locale];
-          return {
-            locale,
-            header: next.header,
-            modules: next.modules,
-            layout: next.layout,
-          };
-        }),
+      renameTemplate: (templateId, name) =>
+        set((s) => ({
+          templates: {
+            ...s.templates,
+            [s.locale]: s.templates[s.locale].map((template) =>
+              template.id === templateId ? { ...template, name } : template
+            ),
+          },
+        })),
 
       addModule: (type) =>
         set((s) => {
@@ -260,17 +323,28 @@ export const useResumeStore = create<ResumeStore>()(
       resetAll: () =>
         set((s) => {
           const next = createDefaultResume(s.locale);
+          const activeId = s.activeTemplateIds[s.locale];
+          const defaultTemplate = createDefaultTemplates()[s.locale].find((template) => template.id === activeId);
+          if (defaultTemplate) next.layout = { ...defaultTemplate.layout };
           return {
             header: next.header,
             modules: next.modules,
             layout: next.layout,
             resumes: { ...s.resumes, [s.locale]: next },
+            templates: {
+              ...s.templates,
+              [s.locale]: s.templates[s.locale].map((template) =>
+                template.id === activeId ? { ...template, layout: { ...next.layout } } : template
+              ),
+            },
           };
         }),
 
       importData: (data) =>
         set((s) => {
-          const next = normalizeResumeData(data, s.locale);
+          const activeId = s.activeTemplateIds[s.locale];
+          const activeLayout = s.templates[s.locale].find((template) => template.id === activeId)?.layout ?? s.layout;
+          const next = normalizeResumeData({ ...data, layout: activeLayout }, s.locale);
           return {
             header: next.header,
             modules: next.modules,
@@ -298,14 +372,40 @@ export const useResumeStore = create<ResumeStore>()(
                 layout: p.layout,
               }, 'zh'),
             };
+        const templates = {
+          zh: mergeTemplateList(p.templates?.zh, 'zh'),
+          en: mergeTemplateList(p.templates?.en, 'en'),
+        };
+        const activeTemplateIds = {
+          zh: templates.zh.some((template) => template.id === p.activeTemplateIds?.zh)
+            ? p.activeTemplateIds!.zh
+            : templates.zh[0].id,
+          en: templates.en.some((template) => template.id === p.activeTemplateIds?.en)
+            ? p.activeTemplateIds!.en
+            : templates.en[0].id,
+        };
+        if (!p.templates) {
+          for (const lang of ['zh', 'en'] as const) {
+            const savedLayout = p.resumes?.[lang]?.layout ?? (lang === locale ? p.layout : undefined);
+            if (savedLayout) {
+              const defaultId = DEFAULT_TEMPLATES[lang].id;
+              templates[lang] = templates[lang].map((template) => template.id === defaultId
+                ? { ...template, layout: mergeLayoutDefaults(savedLayout, lang) }
+                : template);
+            }
+          }
+        }
         const activeResume = resumes[locale];
+        const activeTemplate = templates[locale].find((template) => template.id === activeTemplateIds[locale])!;
         return {
           ...current,
           locale,
           resumes,
+          templates,
+          activeTemplateIds,
           header: activeResume.header,
           modules: activeResume.modules,
-          layout: activeResume.layout,
+          layout: activeTemplate.layout,
         };
       },
     }

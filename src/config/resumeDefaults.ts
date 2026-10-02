@@ -1,4 +1,4 @@
-import type { LayoutConfig, ResumeData, ResumeHeader, ResumeLocale, ResumeModule } from '../types';
+import type { LayoutConfig, ResumeData, ResumeHeader, ResumeLocale, ResumeModule, ResumeTemplate } from '../types';
 import { MODULE_LABELS } from './i18n';
 import { v4 as uuid } from '../utils/uuid';
 
@@ -8,6 +8,11 @@ const SHARED_LAYOUT: Omit<LayoutConfig, 'fontFamily'> = {
   lineHeight: 1.5,
   bodyFontSize: 13,
   headingFontSize: 16,
+  entryTitleFontSize: 15,
+  headerNameFontSize: 22,
+  headerInfoFontSize: 11.5,
+  headerInfoLineHeight: 1.35,
+  moduleSubInfoFontSize: 12,
   pageMarginV: 18,
   pageMarginH: 18,
   accentColor: '#1a1a1a',
@@ -21,6 +26,46 @@ export const DEFAULT_LAYOUTS: Record<ResumeLocale, LayoutConfig> = {
   en: {
     ...SHARED_LAYOUT,
     fontFamily: "'Times New Roman', serif",
+  },
+};
+
+export const DEFAULT_TEMPLATES: Record<ResumeLocale, ResumeTemplate> = {
+  zh: {
+    id: 'super-resume-zh',
+    name: '超级简历中文模板',
+    locale: 'zh',
+    rendererId: 'super-resume',
+    layout: { ...DEFAULT_LAYOUTS.zh },
+  },
+  en: {
+    id: 'super-resume-en',
+    name: 'Super Resume English Template',
+    locale: 'en',
+    rendererId: 'super-resume',
+    layout: { ...DEFAULT_LAYOUTS.en },
+  },
+};
+
+export const SECOND_CHINESE_TEMPLATE: ResumeTemplate = {
+  id: 'chinese-template-2',
+  name: '中文模板2',
+  locale: 'zh',
+  rendererId: 'chinese-template-2',
+  layout: {
+    modulePaddingTop: 8,
+    modulePaddingBottom: 8,
+    lineHeight: 1.35,
+    bodyFontSize: 12.5,
+    headingFontSize: 15,
+    entryTitleFontSize: 15,
+    headerNameFontSize: 22,
+    headerInfoFontSize: 11.5,
+    headerInfoLineHeight: 1.35,
+    moduleSubInfoFontSize: 12,
+    fontFamily: "'Noto Sans SC', sans-serif",
+    pageMarginV: 12,
+    pageMarginH: 13,
+    accentColor: '#1b365d',
   },
 };
 

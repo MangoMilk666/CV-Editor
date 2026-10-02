@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Download, Upload, FileDown, SlidersHorizontal, RotateCcw, Maximize2 } from 'lucide-react';
+import { Download, Upload, FileDown, SlidersHorizontal, RotateCcw, Maximize2, PanelsTopLeft, Pencil } from 'lucide-react';
 import { useResumeStore } from '../store';
 import type { ResumeData } from '../types';
 import { UI_TEXT } from '../config/i18n';
@@ -9,12 +9,21 @@ interface Props {
   onToggleFullscreen: () => void;
   layoutOpen: boolean;
   fullscreen: boolean;
+  onOpenTemplateGallery: () => void;
 }
 
-export default function Toolbar({ onToggleLayout, onToggleFullscreen, layoutOpen, fullscreen }: Props) {
+export default function Toolbar({ onToggleLayout, onToggleFullscreen, layoutOpen, fullscreen, onOpenTemplateGallery }: Props) {
   const store = useResumeStore();
   const importRef = useRef<HTMLInputElement>(null);
   const text = UI_TEXT[store.locale];
+  function handleRenameTemplate() {
+    const activeTemplate = store.templates[store.locale].find(
+      (template) => template.id === store.activeTemplateIds[store.locale]
+    );
+    if (!activeTemplate) return;
+    const name = window.prompt(text.templateNamePrompt, activeTemplate.name)?.trim();
+    if (name) store.renameTemplate(activeTemplate.id, name);
+  }
 
   function handleExportJSON() {
     const data: ResumeData = { header: store.header, modules: store.modules, layout: store.layout };
@@ -71,6 +80,8 @@ export default function Toolbar({ onToggleLayout, onToggleFullscreen, layoutOpen
       </div>
 
       <div className="flex items-center gap-1 ml-auto">
+        <ToolBtn icon={<PanelsTopLeft size={15} />} label={text.chooseTemplate} onClick={onOpenTemplateGallery} />
+        <ToolBtn icon={<Pencil size={15} />} label={text.renameTemplate} onClick={handleRenameTemplate} />
         <ToolBtn icon={<Upload size={15} />} label={text.import} onClick={() => importRef.current?.click()} />
         <ToolBtn icon={<Download size={15} />} label={text.exportJson} onClick={handleExportJSON} />
         <div className="w-px h-5 bg-slate-200 mx-1" />

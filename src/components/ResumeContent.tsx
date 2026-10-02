@@ -1,28 +1,11 @@
 import { useResumeStore } from '../store';
 import { renderEntry } from '../utils/renderEntry';
-import { PHOTO_DIMENSIONS, type EntryRecord, type EntrySortOrder, type ModuleType } from '../types';
-import { isPresentValue, UI_TEXT } from '../config/i18n';
+import { PHOTO_DIMENSIONS, type ResumeData, type ResumeLocale, type ResumeRendererId } from '../types';
+import { UI_TEXT } from '../config/i18n';
+import ChineseTemplate2Content from './ChineseTemplate2Content';
+import { sortEntriesByDate, supportsModuleSort } from '../utils/entrySort';
 
 const LINK_STYLE: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' };
-
-function parseDateVal(d: string): number {
-  if (!d || isPresentValue(d)) return 999999;
-  const [y, m] = d.split('.');
-  return parseInt(y || '0') * 100 + parseInt(m || '0');
-}
-
-function supportsModuleSort(type: ModuleType): boolean {
-  return type === 'education' || type === 'projects' || type === 'internship';
-}
-
-function sortEntriesByDate(entries: EntryRecord[], order: EntrySortOrder) {
-  return [...entries].sort((a, b) => {
-    const endDiff = parseDateVal(b.endDate) - parseDateVal(a.endDate);
-    const startDiff = parseDateVal(b.startDate) - parseDateVal(a.startDate);
-    const result = endDiff !== 0 ? endDiff : startDiff;
-    return order === 'asc' ? -result : result;
-  });
-}
 
 function chunkItems<T>(items: T[], size: number): T[][] {
   const chunks: T[][] = [];
@@ -33,11 +16,14 @@ function chunkItems<T>(items: T[], size: number): T[][] {
 }
 
 /** Pure content — no outer page wrapper. Used both for screen pages and print portal. */
-export default function ResumeContent() {
-  const { header, modules, locale } = useResumeStore();
+function SuperResumeContent({ resume, locale }: { resume: ResumeData; locale: ResumeLocale }) {
+  const { header, modules } = resume;
   const photoDim = PHOTO_DIMENSIONS[header.photoSize];
   const isCenter = header.headerAlign === 'center';
   const text = UI_TEXT[locale];
+  const headerNameSize = locale === 'zh' ? 'var(--resume-header-name-size)' : '24px';
+  const headerInfoSize = locale === 'zh' ? 'var(--resume-header-info-size)' : '12px';
+  const headerInfoLineHeight = locale === 'zh' ? 'var(--resume-header-info-line-height)' : undefined;
 
   const contactItems = [
     header.email ? { label: header.email, href: `mailto:${header.email}` } : null,
@@ -68,13 +54,13 @@ export default function ResumeContent() {
               objectFit: 'cover', border: '1px solid #ddd',
             }} />
           )}
-          <div style={{ fontSize: '24px', fontWeight: 700, letterSpacing: '0.06em', marginBottom: '4px' }}>
+          <div style={{ fontSize: headerNameSize, fontWeight: 700, letterSpacing: '0.06em', marginBottom: '4px' }}>
             {header.name || '姓名'}
           </div>
           {contactRows.map((row, rowIndex) => (
             <div
               key={rowIndex}
-              style={{ fontSize: '12px', color: '#444', marginBottom: '2px' }}
+              style={{ fontSize: headerInfoSize, lineHeight: headerInfoLineHeight, color: '#444', marginBottom: '2px' }}
             >
               {row.map((item, i) => (
                 <span key={`${rowIndex}-${i}`}>
@@ -85,12 +71,12 @@ export default function ResumeContent() {
             </div>
           ))}
           {header.jobTarget && (
-            <div style={{ fontSize: '12px', color: '#444', marginTop: '2px' }}>
+            <div style={{ fontSize: headerInfoSize, lineHeight: headerInfoLineHeight, color: '#444', marginTop: '2px' }}>
               {text.jobTargetPrefix}{header.jobTarget}
             </div>
           )}
           {header.internshipDuration && (
-            <div style={{ fontSize: '12px', color: '#444', marginTop: '2px' }}>
+            <div style={{ fontSize: headerInfoSize, lineHeight: headerInfoLineHeight, color: '#444', marginTop: '2px' }}>
               {text.internshipDurationPrefix}{header.internshipDuration}
             </div>
           )}
@@ -98,14 +84,15 @@ export default function ResumeContent() {
       ) : (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '10px' }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '4px' }}>
+            <div style={{ fontSize: headerNameSize, fontWeight: 700, letterSpacing: '0.04em', marginBottom: '4px' }}>
               {header.name || '姓名'}
             </div>
             {contactRows.map((row, rowIndex) => (
               <div
                 key={rowIndex}
                 style={{
-                  fontSize: '12px',
+                  fontSize: headerInfoSize,
+                  lineHeight: headerInfoLineHeight,
                   color: '#444',
                   display: 'flex',
                   gap: '0 12px',
@@ -116,12 +103,12 @@ export default function ResumeContent() {
               </div>
             ))}
             {header.jobTarget && (
-              <div style={{ fontSize: '12px', color: '#444', marginTop: '2px' }}>
+              <div style={{ fontSize: headerInfoSize, lineHeight: headerInfoLineHeight, color: '#444', marginTop: '2px' }}>
                 {text.jobTargetPrefix}{header.jobTarget}
               </div>
             )}
             {header.internshipDuration && (
-              <div style={{ fontSize: '12px', color: '#444', marginTop: '2px' }}>
+              <div style={{ fontSize: headerInfoSize, lineHeight: headerInfoLineHeight, color: '#444', marginTop: '2px' }}>
                 {text.internshipDurationPrefix}{header.internshipDuration}
               </div>
             )}
@@ -150,7 +137,7 @@ export default function ResumeContent() {
               return (
                 <div
                   key={i}
-                  className="resume-content"
+                  className={`resume-content${locale === 'zh' ? ' resume-super-zh-content' : ''}`}
                   style={{ marginTop: i > 0 ? '8px' : 0 }}
                   dangerouslySetInnerHTML={{ __html: html }}
                 />
@@ -161,4 +148,27 @@ export default function ResumeContent() {
       })}
     </>
   );
+}
+
+interface ResumeContentProps {
+  resume?: ResumeData;
+  locale?: ResumeLocale;
+  rendererId?: ResumeRendererId;
+}
+
+export default function ResumeContent(props: ResumeContentProps) {
+  const store = useResumeStore();
+  const resume = props.resume ?? { header: store.header, modules: store.modules, layout: store.layout };
+  const locale = props.locale ?? store.locale;
+  const rendererId = props.rendererId ?? store.templates[store.locale].find(
+    (template) => template.id === store.activeTemplateIds[store.locale]
+  )?.rendererId;
+
+  switch (rendererId) {
+    case 'chinese-template-2':
+      return <ChineseTemplate2Content resume={resume} />;
+    case 'super-resume':
+    default:
+      return <SuperResumeContent resume={resume} locale={locale} />;
+  }
 }

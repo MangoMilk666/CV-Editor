@@ -54,6 +54,40 @@ export default function LayoutPanel({ onClose }: Props) {
             onChange={(v) => updateLayout({ headingFontSize: v })}
           />
           <SliderField
+            label="模块子目录字号"
+            value={layout.entryTitleFontSize}
+            min={11} max={20} step={0.5}
+            unit="px"
+            onChange={(v) => updateLayout({ entryTitleFontSize: v })}
+          />
+          <SliderField
+            label="模块子目录补充信息字体大小"
+            value={layout.moduleSubInfoFontSize}
+            min={9} max={16} step={0.5}
+            unit="px"
+            onChange={(v) => updateLayout({ moduleSubInfoFontSize: v })}
+          />
+          <SliderField
+            label="个人信息字号"
+            value={layout.headerInfoFontSize}
+            min={9} max={16} step={0.5}
+            unit="px"
+            onChange={(v) => updateLayout({ headerInfoFontSize: v })}
+          />
+          <SliderField
+            label="个人信息行距"
+            value={layout.headerInfoLineHeight}
+            min={1} max={2.5} step={0.1}
+            onChange={(v) => updateLayout({ headerInfoLineHeight: v })}
+          />
+          <SliderField
+            label="姓名字号"
+            value={layout.headerNameFontSize}
+            min={16} max={32} step={0.5}
+            unit="px"
+            onChange={(v) => updateLayout({ headerNameFontSize: v })}
+          />
+          <SliderField
             label="行距"
             value={layout.lineHeight}
             min={1.0} max={2.5} step={0.1}

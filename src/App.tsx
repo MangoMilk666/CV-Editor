@@ -6,6 +6,7 @@ import HeaderEditor from './components/HeaderEditor';
 import ModuleList from './components/ModuleList';
 import ResumePreview from './components/ResumePreview';
 import LayoutPanel from './components/LayoutPanel';
+import TemplateGallery from './components/TemplateGallery';
 
 const EDITOR_WIDTH_KEY = 'cv-editor-sidebar-width';
 const DEFAULT_EDITOR_WIDTH = 384;
@@ -17,9 +18,11 @@ function clampEditorWidth(width: number): number {
 }
 
 export default function App() {
-  const layout = useResumeStore((s) => s.layout);
+  const store = useResumeStore();
+  const { layout, locale } = store;
   const [layoutOpen, setLayoutOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const [templateGalleryOpen, setTemplateGalleryOpen] = useState(false);
   const [editorWidth, setEditorWidth] = useState(() => {
     if (typeof window === 'undefined') return DEFAULT_EDITOR_WIDTH;
     const stored = Number(window.localStorage.getItem(EDITOR_WIDTH_KEY) ?? DEFAULT_EDITOR_WIDTH);
@@ -65,6 +68,22 @@ export default function App() {
     };
   }, [draggingSidebar, layoutOpen]);
 
+  if (templateGalleryOpen) {
+    return (
+      <TemplateGallery
+        locale={locale}
+        templates={store.templates[locale]}
+        activeTemplateId={store.activeTemplateIds[locale]}
+        onBack={() => setTemplateGalleryOpen(false)}
+        onSelect={(templateId) => {
+          store.selectTemplate(templateId);
+          setTemplateGalleryOpen(false);
+        }}
+        onRename={store.renameTemplate}
+      />
+    );
+  }
+
   return (
     <div className={`flex flex-col h-screen bg-slate-100 overflow-hidden ${draggingSidebar ? 'select-none cursor-col-resize' : ''}`}>
       <Toolbar
@@ -72,6 +91,7 @@ export default function App() {
         onToggleFullscreen={() => setFullscreen((v) => !v)}
         layoutOpen={layoutOpen}
         fullscreen={fullscreen}
+        onOpenTemplateGallery={() => setTemplateGalleryOpen(true)}
       />
 
       <div ref={shellRef} className="flex flex-1 overflow-hidden">

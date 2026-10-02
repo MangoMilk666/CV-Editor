@@ -64,10 +64,25 @@ export interface LayoutConfig {
   lineHeight: number;
   bodyFontSize: number;
   headingFontSize: number;
+  entryTitleFontSize: number;
+  headerNameFontSize: number;
+  headerInfoFontSize: number;
+  headerInfoLineHeight: number;
+  moduleSubInfoFontSize: number;
   fontFamily: string;
   pageMarginV: number;
   pageMarginH: number;
   accentColor: string;
+}
+
+export type ResumeRendererId = 'super-resume' | 'chinese-template-2';
+
+export interface ResumeTemplate {
+  id: string;
+  name: string;
+  locale: ResumeLocale;
+  rendererId: ResumeRendererId;
+  layout: LayoutConfig;
 }
 
 export interface ResumeData {

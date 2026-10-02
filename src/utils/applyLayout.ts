@@ -10,6 +10,11 @@ export function applyLayoutVars(layout: LayoutConfig) {
   root.style.setProperty('--resume-font-family', layout.fontFamily);
   root.style.setProperty('--resume-body-size', `${layout.bodyFontSize}px`);
   root.style.setProperty('--resume-heading-size', `${layout.headingFontSize}px`);
+  root.style.setProperty('--resume-entry-title-size', `${layout.entryTitleFontSize}px`);
+  root.style.setProperty('--resume-header-name-size', `${layout.headerNameFontSize}px`);
+  root.style.setProperty('--resume-header-info-size', `${layout.headerInfoFontSize}px`);
+  root.style.setProperty('--resume-header-info-line-height', String(layout.headerInfoLineHeight));
+  root.style.setProperty('--resume-module-sub-info-size', `${layout.moduleSubInfoFontSize}px`);
   root.style.setProperty('--resume-line-height', String(layout.lineHeight));
   root.style.setProperty('--resume-module-gap-top', `${layout.modulePaddingTop}px`);
   root.style.setProperty('--resume-module-gap-bottom', `${layout.modulePaddingBottom}px`);

@@ -29,7 +29,7 @@ function row(left: string, right: string, rightBold = false): string {
   const rightHtml = right
     ? `<span style="white-space:nowrap;flex-shrink:0;color:#555;${rightBold ? 'font-weight:700;' : ''}">${esc(right)}</span>`
     : '';
-  return `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;line-height:1.4">
+  return `<div class="resume-entry-timeline" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;line-height:1.4">
     <span style="flex:1;min-width:0">${left}</span>${rightHtml}
   </div>`;
 }
@@ -82,10 +82,10 @@ export function renderEntry(type: ModuleType, e: EntryRecord, locale: ResumeLoca
       //   技术栈 (if present)
       //   描述
       const linkLine = e.link
-        ? `<div><a href="https://${e.link.replace(/^https?:\/\//, '')}" style="color:#2563eb;font-size:0.92em">${esc(e.link)}</a></div>`
+        ? `<div class="resume-entry-project-meta"><a href="https://${e.link.replace(/^https?:\/\//, '')}" style="color:#2563eb">${esc(e.link)}</a></div>`
         : '';
       const stackLine = e.techStack
-        ? `<div style="color:#555;font-size:0.92em">${locale === 'zh' ? '技术栈：' : 'Tech Stack: '}${esc(e.techStack)}</div>`
+        ? `<div class="resume-entry-project-meta" style="color:#555">${locale === 'zh' ? '技术栈：' : 'Tech Stack: '}${esc(e.techStack)}</div>`
         : '';
       return [
         row(titleLeft, dateRange(e, locale), locale === 'en'),
